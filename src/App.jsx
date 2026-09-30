@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import DitherVeil from "./DitherVeil.jsx";
 
 const assetUrl = (path) => `${import.meta.env.BASE_URL}assets/${path}`;
@@ -39,11 +39,11 @@ const services = [
 
 const clientTiles = [
   { color: "yellow", image: "proof-rockfalls-brand.png" },
-  { color: "navy", image: "proof-client-mark.png" },
-  { color: "blue", image: "proof-client-mark-alt.png" },
-  { color: "teal", image: "proof-client-mark.png" },
-  { color: "gray", image: "proof-client-mark.png" },
-  { color: "red", image: "proof-client-mark.png" },
+  { color: "navy", image: "proof-client-new.png" },
+  { color: "blue", image: "proof-client-alt-new.png" },
+  { color: "teal", image: "proof-client-new.png" },
+  { color: "gray", image: "proof-client-new.png" },
+  { color: "red", image: "proof-client-new.png" },
 ];
 
 const methodologySteps = [
@@ -81,25 +81,13 @@ const methodologySteps = [
   },
 ];
 
-function Brand() {
-  return (
-    <a className="brand" href="#inicio" aria-label="Clava Creative, início">
-      <img className="brand__symbol" src={assetUrl("brand-symbol.svg")} alt="" />
-      <span className="brand__word">
-        <img className="brand__wordmark" src={assetUrl("brand-word.svg")} alt="Clava" />
-        <img className="brand__dot" src={assetUrl("brand-dot.svg")} alt="" />
-      </span>
-    </a>
-  );
-}
-
 function Hero() {
   return (
     <section className="hero" aria-labelledby="hero-title">
       <img className="hero__texture" src={assetUrl("hero-background.png")} alt="" />
       <div className="hero__inner">
         <header className="site-header">
-          <Brand />
+          <a className="hero__brand" href="#inicio" aria-label="Clava Creative, início"><img src={assetUrl("hero-logo.svg")} alt="Clava" /></a>
         </header>
         <div className="hero__content" id="inicio">
           <div className="hero__intro">
@@ -119,10 +107,53 @@ function Hero() {
               </div>
             </div>
           </div>
-          <p className="hero__title" aria-label="Clava Creative">
-            Clava Creative
-          </p>
         </div>
+      </div>
+    </section>
+  );
+}
+
+function Partners() {
+  const marks = [
+    ['partner-1.png'], ['partner-2-symbol.png', 'partner-2-word.png'],
+    ['partner-3.png'], ['partner-4-symbol.png', 'partner-4-word.png'], ['partner-5.png'],
+  ];
+  return (
+    <section className="partners" aria-label="Marcas que confiam na Clava">
+      <div className="partners__track">
+        {[0, 1, 2, 3].map(copy => (
+          <div className="partners__group" aria-hidden={copy > 0 ? true : undefined} key={copy}>
+            {marks.map((images, index) => (
+              <div className={`partners__mark partners__mark--${index}`} key={index}>
+                {images.map(image => <img src={assetUrl(image)} alt="" key={image} />)}
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function Results() {
+  const metrics = [
+    { value: '87', unit: '%', description: 'Do tempo reduzido em processos repetitivos' },
+    { value: '3', unit: 'x', description: 'Mais velocidade para tomada de decisões' },
+    { value: '30', unit: '%', description: 'Menos custos operacionais' },
+  ];
+  return (
+    <section className="section results" aria-labelledby="results-title">
+      <div className="results__heading">
+        <p className="eyebrow">O amanhã pertence aos que criam.</p>
+        <h2 id="results-title"><span>Poucos têm acesso ao futuro.</span><br />E você pode ser um deles.</h2>
+      </div>
+      <div className="results__grid">
+        {metrics.map(metric => (
+          <article className="metric-card" key={metric.value}>
+            <p className="metric-card__value">{metric.value}<span>{metric.unit}</span></p>
+            <h3>{metric.description}</h3>
+          </article>
+        ))}
       </div>
     </section>
   );
@@ -141,11 +172,77 @@ function SectionHeading({ eyebrow, title, description, titleId }) {
 }
 
 function Methodology() {
-  const [activeStep, setActiveStep] = useState(0);
-  const step = methodologySteps[activeStep];
+  const stackRef = useRef(null);
+  const [compact, setCompact] = useState(false);
+
+  useEffect(() => {
+    const stack = stackRef.current;
+    const cards = [...stack.querySelectorAll('.method-card')];
+    const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const mobile = window.matchMedia('(max-width: 760px)');
+    const updateFit = () => setCompact(mobile.matches);
+    updateFit();
+    mobile.addEventListener('change', updateFit);
+    let frame = 0;
+    let inView = false;
+
+    const update = () => {
+      frame = 0;
+      const enabled = !mobile.matches && !motion.matches && window.innerHeight > 600 &&
+        cards.every(card => card.offsetHeight < window.innerHeight - 72);
+      stack.classList.toggle('methodology__stack--animated', enabled);
+      const stage = stack.querySelector('.methodology__stage');
+      const viewport = window.innerHeight;
+      const hold = Math.min(360, Math.max(180, viewport * .35));
+      const transition = Math.max(400, viewport * .8);
+      const stageHeight = Math.max(...cards.map(card => card.offsetHeight)) + 36;
+      const travel = cards.length * hold + (cards.length - 1) * transition;
+      stack.style.height = enabled ? `${stageHeight + travel}px` : '';
+      stage.style.height = enabled ? `${stageHeight}px` : '';
+      const scroll = Math.max(0, 24 - stack.getBoundingClientRect().top);
+      const arrival = index => index === 0 ? 1 : Math.min(1, Math.max(0,
+        (scroll - ((index - 1) * (hold + transition) + hold)) / transition));
+      cards.forEach((card, index) => {
+        const incoming = enabled ? arrival(index) : 1;
+        const eased = incoming * incoming * (3 - 2 * incoming);
+        card.style.transform = enabled && index > 0
+          ? `translateY(${(viewport + 64) * (1 - eased)}px)` : '';
+        const progress = enabled && index < cards.length - 1 ? arrival(index + 1) : 0;
+        const visual = card.querySelector('.method-card__visual');
+        visual.style.transform = progress ? `translateY(${-18 * progress}px) scale(${1 - .06 * progress})` : '';
+        visual.style.opacity = String(1 - .45 * progress);
+      });
+    };
+    const schedule = () => {
+      if (!frame && inView) frame = requestAnimationFrame(update);
+    };
+    const observer = new IntersectionObserver(([entry]) => {
+      inView = entry.isIntersecting;
+      if (inView) schedule();
+    }, { rootMargin: '200px 0px' });
+    observer.observe(stack);
+    const resize = new ResizeObserver(() => {
+      // Resize must update the layout even when the section is offscreen.
+      if (!frame) frame = requestAnimationFrame(update);
+    });
+    cards.forEach(card => resize.observe(card));
+    window.addEventListener('scroll', schedule, { passive: true });
+    window.addEventListener('resize', schedule);
+    motion.addEventListener('change', update);
+    update();
+    return () => {
+      cancelAnimationFrame(frame);
+      observer.disconnect();
+      resize.disconnect();
+      window.removeEventListener('scroll', schedule);
+      window.removeEventListener('resize', schedule);
+      motion.removeEventListener('change', update);
+      mobile.removeEventListener('change', updateFit);
+    };
+  }, []);
 
   return (
-    <section className="section methodology" aria-labelledby="method-title">
+    <section className="section methodology" id="metodologia" aria-labelledby="method-title">
       <div className="section-heading methodology__heading">
         <div className="section-heading__title">
           <p className="eyebrow">Entenda a nossa metodologia</p>
@@ -156,47 +253,36 @@ function Methodology() {
           automação e estratégia, garantindo que cada decisão seja certeira e cada passo leve você mais rápido ao futuro.
         </p>
       </div>
-      <div className="methodology__interactive">
-        <div className="methodology__steps" role="group" aria-label="Etapas da metodologia">
-          {methodologySteps.map((item, index) => (
-            <button
-              type="button"
-              className={index === activeStep ? "step step--current" : "step"}
-              key={item.label}
-              aria-pressed={index === activeStep}
-              aria-controls="methodology-panel"
-              onClick={() => setActiveStep(index)}
-            >
-              {item.label}
-            </button>
-          ))}
+      <div className="methodology__stack" ref={stackRef}>
+        <div className="methodology__stage">
+        {methodologySteps.map((step, index) => (
+          <article className="method-card" key={step.label} style={{ '--stack-index': index }} aria-labelledby={`method-step-${index}`}>
+            <div className="method-card__visual">
+              <DitherVeil
+                src={assetUrl(step.image)}
+                alt={step.imageAlt}
+                className="method-card__dither"
+                fit={compact ? "contain" : "cover"}
+                pattern="floyd"
+                pixelSize={2}
+                levels={3}
+                inkColor="#120f17"
+                paperColor="#f4f1ea"
+                contrast={1.3}
+                brightness={-0.02}
+                revealRadius={120}
+                softness={0.25}
+                linger={2.2}
+                clickBurst={false}
+              />
+            </div>
+            <div className="method-card__copy">
+              <h3 id={`method-step-${index}`}>{step.title}</h3>
+              <p>{step.description}</p>
+            </div>
+          </article>
+        ))}
         </div>
-        <article className="method-card" id="methodology-panel" aria-live="polite">
-          <div className="method-card__copy">
-            <h3>{step.title}</h3>
-            <p>{step.description}</p>
-          </div>
-          <div className="method-card__visual">
-            <DitherVeil
-              key={step.image}
-              src={assetUrl(step.image)}
-              alt={step.imageAlt}
-              className="method-card__dither"
-              fit="contain"
-              pattern="floyd"
-              pixelSize={2}
-              levels={3}
-              inkColor="#120f17"
-              paperColor="#f4f1ea"
-              contrast={1.3}
-              brightness={-0.02}
-              revealRadius={90}
-              softness={0.25}
-              linger={2.2}
-              clickBurst={false}
-            />
-          </div>
-        </article>
       </div>
     </section>
   );
@@ -255,8 +341,7 @@ function Proof() {
   return (
     <section className="section proof" aria-labelledby="proof-title">
       <div className="proof__heading">
-        <h2 id="proof-title">Veja o que falam sobre as soluções da Clava Creative</h2>
-        <a className="proof__link" href="#proof-cases">Conheça os cases</a>
+        <h2 id="proof-title">Quem conhece a Clava confia no que entregamos.</h2>
       </div>
       <div className="proof-grid" id="proof-cases" role="group" aria-label="Depoimento e marcas atendidas">
         {clientTiles.map(({ color, image }, index) => {
@@ -274,12 +359,14 @@ function Proof() {
               onClick={() => setSelectedCard(color)}
               onKeyDown={cardKeyboardHandler(color)}
             >
-              <img className="case-card__brand" src={assetUrl(image)} alt="" />
-              <div className="case-card__details" aria-hidden={!expanded}>
-                <div className="case-card__client">
+              <div className="case-card__identity">
+                <img className="case-card__brand" src={assetUrl(image)} alt="" />
+                <div className="case-card__client" aria-hidden={!expanded}>
                   <span>Rockfalls Tap House</span>
                   <span>Hamburgueria em Foz do Iguaçu</span>
                 </div>
+              </div>
+              <div className="case-card__details" aria-hidden={!expanded}>
                 <div className="case-card__quote">
                   <blockquote>
                     A Clava foi importante para criar meios inovadores de capturar leads e integrá-los ao nosso sistema, sem dúvidas,
@@ -303,6 +390,7 @@ function Footer() {
   return (
     <footer className="footer" id="contato">
       <div className="contact-card">
+        <img className="contact-card__background" src={assetUrl("contact-background.png")} alt="" />
         <div className="contact-card__inner">
           <div className="contact-card__title">
             <p className="eyebrow">Contate-nos</p>
@@ -317,13 +405,12 @@ function Footer() {
           </div>
         </div>
       </div>
-      <div className="footer__brand">
-        <img className="footer__wordmark" src={assetUrl("footer-wordmark.svg")} alt="Clava" />
-        <img className="footer__dot" src={assetUrl("footer-dot.svg")} alt="" />
-      </div>
       <div className="footer__legal">
-        <span>Clava Creative™</span>
-        <span>Todos os direitos reservados, 2026.</span>
+        <div className="footer__signature">
+          <img src={assetUrl("footer-logo-small.svg")} alt="Clava" />
+          <span>Todos os direitos reservados ©</span>
+        </div>
+        <img className="footer__moon" src={assetUrl("icon-moon.svg")} alt="" />
       </div>
     </footer>
   );
@@ -333,9 +420,11 @@ export default function App() {
   return (
     <main>
       <Hero />
+      <Partners />
       <div className="page-content">
         <Methodology />
         <Services />
+        <Results />
         <Proof />
         <Footer />
       </div>

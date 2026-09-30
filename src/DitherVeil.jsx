@@ -746,8 +746,8 @@ const DitherVeil = ({
 
     const locate = e => {
       const rect = container.getBoundingClientRect();
-      pointer.x = e.clientX - rect.left;
-      pointer.y = e.clientY - rect.top;
+      pointer.x = (e.clientX - rect.left) * container.clientWidth / rect.width;
+      pointer.y = (e.clientY - rect.top) * container.clientHeight / rect.height;
       pointer.placed = true;
     };
     const onMove = e => {
