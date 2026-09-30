@@ -1186,3 +1186,44 @@ h2, h3, p {
 
 .services__heading h2,
 .methodology__heading h2 { font-weight: 400; }
+
+/* Updated methodology and results from Figma 100:29. */
+.methodology__interactive { display: flex; flex-direction: column; gap: 8px; }
+.methodology__choices { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.methodology__choice { display: flex; flex-direction: column; justify-content: space-between; gap: 24px; min-height: 280px; padding: 32px; text-align: left; font: inherit; color: #585858; background: #202020; border: 1px solid #575757; border-radius: 12px; cursor: pointer; }
+.methodology__choice.is-active { background: #F6F213; color: #010101; }
+.methodology__choice:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+.methodology__choice-title { font-size: 24px; line-height: 1.2; letter-spacing: -.01em; }
+.methodology__choice-description { font-size: 16px; line-height: 1.5; letter-spacing: -.01em; }
+.methodology__image { width: 100%; height: auto; aspect-ratio: 1296 / 786; border: 1px solid #575757; border-radius: 16px; overflow: hidden; }
+.results { padding-block: 0; }
+.results__grid { gap: 4px; }
+.metric-card { min-height: 328px; padding: 0; gap: 0; background: #373737; border-color: #474747; overflow: hidden; }
+.metric-card__value { padding: 32px; gap: 4px; font-size: 55.585px; }
+.metric-card__value span { font-size: 37.057px; }
+.metric-card h3 { width: 100%; max-width: none; min-height: 136px; padding: 32px 24px; background: #010101; color: #fff; font-size: 20px; }
+.contact-card { padding: 120px 72px; }
+.contact-card__background { width: 124.44%; height: 319.58%; left: -12.22%; top: -193.12%; opacity: .85; }
+.contact-card h2 { font-size: 28px; }
+.footer { gap: 120px; }
+@media (max-width: 1024px) {
+  .methodology__choice { padding: 20px; }
+  .methodology__choice-title { font-size: 21px; }
+  .methodology__choice-description { font-size: 15px; }
+  .contact-card { padding: 64px 40px; }
+}
+@media (max-width: 760px) {
+  .methodology__choices { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .methodology__choice { min-height: 220px; padding: 16px; gap: 16px; }
+  .methodology__choice-title { font-size: 18px; }
+  .methodology__choice-description { font-size: 14px; }
+  .methodology__image { aspect-ratio: 4 / 3; }
+  .metric-card { min-height: 260px; }
+  .metric-card__value { padding: 24px; font-size: 48px; }
+  .metric-card__value span { font-size: 32px; }
+  .metric-card h3 { min-height: 112px; padding: 24px; font-size: 20px; }
+  .contact-card { padding: 40px 20px; }
+  .footer { gap: 48px; }
+}
+
+@media (min-width: 1025px) { .service-card--featured, .services-grid__secondary { min-height: 680px; } }

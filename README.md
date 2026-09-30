@@ -16,7 +16,7 @@ O workflow configura a base do Vite para o caminho do repositório e publica o c
 
 ## Metodologia
 
-As quatro etapas seguem o layout vertical do Figma (node `89:2`), com imagem interativa acima da informação. Os cards se empilham durante o scroll usando CSS sticky e transformações vinculadas ao progresso da rolagem, sem capturar o scroll nem adicionar bibliotecas. O efeito de cor do DitherVeil continua disponível em dispositivos com mouse. No mobile (até 760px), a seção sempre usa cards em sequência, sem prender a tela ou reservar espaço de scroll. Em telas baixas, cards maiores que a área disponível e com preferência por movimento reduzido, a seção usa rolagem normal.
+As quatro etapas seguem o Figma (node `100:29`), com cards clicáveis acima de uma imagem interativa. Mapeamos inicia selecionado; cada botão troca a imagem e destaca a etapa atual. O efeito de cor do DitherVeil foi preservado. A metodologia não utiliza sticky nem animação vinculada ao scroll em nenhum breakpoint.
 
 ## Layout atualizado
 
