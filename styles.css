@@ -1227,3 +1227,13 @@ h2, h3, p {
 }
 
 @media (min-width: 1025px) { .service-card--featured, .services-grid__secondary { min-height: 680px; } }
+
+/* Large displays: fill the hero while preserving the image proportions. */
+@media (min-width: 2560px) {
+  .hero__texture {
+    width: 100%;
+    left: 0;
+    object-fit: cover;
+    object-position: center;
+  }
+}
