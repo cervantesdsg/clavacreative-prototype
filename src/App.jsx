@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import DitherVeil from "./DitherVeil.jsx";
 
 const assetUrl = (path) => `${import.meta.env.BASE_URL}assets/${path}`;
@@ -40,7 +40,7 @@ const services = [
 const clientTiles = [
   { color: "yellow", image: "proof-rockfalls-brand.png" },
   { color: "navy", image: "proof-client-new.png" },
-  { color: "blue", image: "proof-client-alt-new.png" },
+  { color: "blue", image: "proof-client-new.png" },
   { color: "teal", image: "proof-client-new.png" },
   { color: "gray", image: "proof-client-new.png" },
   { color: "red", image: "proof-client-new.png" },
@@ -49,7 +49,8 @@ const clientTiles = [
 const methodologySteps = [
   {
     label: "Mapeamos",
-    title: "Mapeamos as suas necessidades",
+    title: "Mapeamos as necessidades",
+    icon: "method-search.svg",
     description:
       "Projetamos e documentamos as etapas, ferramentas, dados necessários e exceções.",
     image: "method-mapeamos-veil.png",
@@ -58,6 +59,7 @@ const methodologySteps = [
   {
     label: "Priorizamos",
     title: "Priorizamos o que importa",
+    icon: "method-check.svg",
     description:
       "Configuramos a automação, integração ou sistema e validamos o funcionamento com exemplos reais.",
     image: "method-priorizamos-veil.png",
@@ -65,7 +67,8 @@ const methodologySteps = [
   },
   {
     label: "Implementamos",
-    title: "Implementamos e integramos o sistema",
+    title: "Implementamos o sistema",
+    icon: "method-computer.svg",
     description:
       "Configuramos a automação, integração ou sistema e validamos o funcionamento com exemplos reais.",
     image: "method-implementamos-veil.png",
@@ -73,7 +76,8 @@ const methodologySteps = [
   },
   {
     label: "Acompanhamos",
-    title: "Acompanhamos o seu projeto",
+    title: "Acompanhamos o projeto",
+    icon: "method-support.svg",
     description:
       "Acompanhamos, corrigimos problemas e orientamos o time para extrair a maior efetividade da ferramenta.",
     image: "method-acompanhamos-veil.png",
@@ -94,12 +98,11 @@ function Hero() {
             <img className="hero__mark" src={assetUrl("section-mark.svg")} alt="" />
             <div className="hero__copy">
               <h1 id="hero-title">
-                <strong>Saia da passividade:</strong> as empresas não querem esperar o futuro, querem dominá-lo agora.
+                <strong>Menos tarefas repetitivas.</strong> Mais tempo para fazer sua empresa crescer.
               </h1>
               <div className="hero__summary">
                 <p>
-                  A Clava é a aliada definitiva para líderes visionários, antecipando tendências e aplicando IA e
-                  Automação garantindo que sua empresa esteja sempre à frente da concorrência.
+                  Criamos automações, integramos sistemas e aplicamos IA aos processos da sua empresa para reduzir retrabalho e simplificar a rotina da sua equipe.
                 </p>
                 <a className="button button--light" href="#contato">
                   Entre em contato
@@ -151,7 +154,16 @@ function Results() {
         {metrics.map(metric => (
           <article className="metric-card" key={metric.value}>
             <p className="metric-card__value">{metric.value}<span>{metric.unit}</span></p>
-            <h3>{metric.description}</h3>
+            <h3>
+              <span className="metric-card__description-desktop">{metric.description}</span>
+              <span className="metric-card__description-mobile">
+                {metric.value === '3'
+                  ? 'Mais velocidade na tomada de decisões estratégicas'
+                  : metric.value === '30'
+                    ? 'Menos custo operacional, em média, no primeiro trimestre.'
+                    : metric.description}
+              </span>
+            </h3>
           </article>
         ))}
       </div>
@@ -200,11 +212,19 @@ function Methodology() {
           {methodologySteps.map((item, index) => (
             <button type="button" className={`methodology__choice${activeStep === index ? ' is-active' : ''}`}
               key={item.label} aria-pressed={activeStep === index} aria-controls="methodology-panel"
+              aria-label={`${item.title}. ${item.description}`}
               onClick={() => setActiveStep(index)}>
-              <span className="methodology__choice-title">{item.title}</span>
-              <span className="methodology__choice-description">{item.description}</span>
+              <img className="methodology__choice-icon" src={assetUrl(item.icon)} alt="" />
+              <span className="methodology__choice-copy">
+                <span className="methodology__choice-title">{item.title}</span>
+                <span className="methodology__choice-description">{item.description}</span>
+              </span>
             </button>
           ))}
+        </div>
+        <div className="methodology__active-copy" aria-live="polite">
+          <h3>{step.title}</h3>
+          <p>{step.description}</p>
         </div>
         <div className="method-card__visual methodology__image" id="methodology-panel" aria-label={step.label}>
           <DitherVeil key={step.image} src={assetUrl(step.image)} alt={step.imageAlt}
@@ -315,7 +335,193 @@ function Proof() {
   );
 }
 
+function ContactModal({ onClose, triggerRef, isVisible }) {
+  const modalRef = useRef(null);
+
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    modalRef.current?.querySelector("button, input, textarea")?.focus();
+
+    const handleKeyDown = event => {
+      if (event.key === "Escape") {
+        onClose();
+        return;
+      }
+      if (event.key !== "Tab" || !modalRef.current) return;
+      const focusable = [...modalRef.current.querySelectorAll("button, input, textarea")]
+        .filter(element => !element.disabled);
+      const first = focusable[0];
+      const last = focusable.at(-1);
+      if (!first || !last) return;
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", handleKeyDown);
+      triggerRef.current?.focus({ preventScroll: true });
+    };
+  }, [onClose, triggerRef]);
+
+  return (
+    <div className={`contact-modal-backdrop${isVisible ? " is-visible" : ""}`} onClick={event => {
+      if (event.target === event.currentTarget) onClose();
+    }}>
+      <section className="contact-modal" ref={modalRef} role="dialog" aria-modal="true"
+        aria-labelledby="contact-modal-title" data-theme-panel>
+        <header className="contact-modal__header">
+          <h2 id="contact-modal-title">Agende seu diagnóstico gratuito</h2>
+          <button className="contact-modal__close" type="button" aria-label="Fechar modal" onClick={onClose}>
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="m6 6 12 12M18 6 6 18" />
+            </svg>
+          </button>
+        </header>
+
+        <form className="contact-modal__form" onSubmit={event => event.preventDefault()}>
+          <div className="contact-modal__fields">
+            <label className="contact-modal__field">
+              <span>Nome completo</span>
+              <input type="text" placeholder="John Lennon" />
+            </label>
+            <label className="contact-modal__field">
+              <span>E-mail</span>
+              <input type="email" placeholder="seu@email.com" />
+            </label>
+            <label className="contact-modal__field">
+              <span>Empresa</span>
+              <input type="text" placeholder="Clava creative" />
+            </label>
+            <label className="contact-modal__field contact-modal__field--phone">
+              <span>Telefone</span>
+              <input type="tel" placeholder="(11) 99999-9999" />
+            </label>
+            <label className="contact-modal__field contact-modal__field--message">
+              <span>Conte-nos sobre seu desafio</span>
+              <textarea placeholder="Descreva brevemente sobre o que você precisa resolver hoje na sua empresa." />
+            </label>
+          </div>
+
+          <div className="contact-modal__actions">
+            <button className="contact-modal__cancel" type="button" onClick={onClose}>Cancelar</button>
+            <button className="contact-modal__submit" type="submit">Enviar mensagem</button>
+          </div>
+        </form>
+      </section>
+    </div>
+  );
+}
+
 function Footer() {
+  const [contactModalMounted, setContactModalMounted] = useState(false);
+  const [contactModalVisible, setContactModalVisible] = useState(false);
+  const contactTriggerRef = useRef(null);
+  const contactModalCloseTimerRef = useRef(null);
+  const contactModalEnterFrameRef = useRef(null);
+  const openContactModal = useCallback(() => {
+    if (contactModalCloseTimerRef.current !== null) {
+      window.clearTimeout(contactModalCloseTimerRef.current);
+      contactModalCloseTimerRef.current = null;
+    }
+    if (contactModalEnterFrameRef.current !== null) {
+      window.cancelAnimationFrame(contactModalEnterFrameRef.current);
+    }
+    setContactModalMounted(true);
+    setContactModalVisible(false);
+    contactModalEnterFrameRef.current = window.requestAnimationFrame(() => {
+      contactModalEnterFrameRef.current = window.requestAnimationFrame(() => {
+        setContactModalVisible(true);
+        contactModalEnterFrameRef.current = null;
+      });
+    });
+  }, []);
+  const closeContactModal = useCallback(() => {
+    if (contactModalCloseTimerRef.current !== null) return;
+    if (contactModalEnterFrameRef.current !== null) {
+      window.cancelAnimationFrame(contactModalEnterFrameRef.current);
+      contactModalEnterFrameRef.current = null;
+    }
+    setContactModalVisible(false);
+    contactModalCloseTimerRef.current = window.setTimeout(() => {
+      setContactModalMounted(false);
+      contactModalCloseTimerRef.current = null;
+    }, 220);
+  }, []);
+
+  useEffect(() => () => {
+    if (contactModalCloseTimerRef.current !== null) {
+      window.clearTimeout(contactModalCloseTimerRef.current);
+    }
+    if (contactModalEnterFrameRef.current !== null) {
+      window.cancelAnimationFrame(contactModalEnterFrameRef.current);
+    }
+  }, []);
+  const [appearanceOpen, setAppearanceOpen] = useState(false);
+  const [appearance, setAppearance] = useState(() => {
+    const stored = localStorage.getItem('clava-appearance');
+    return ['system', 'light', 'dark'].includes(stored) ? stored : 'system';
+  });
+  const [systemTheme, setSystemTheme] = useState(() =>
+    window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+  );
+  const appearanceRef = useRef(null);
+
+  useEffect(() => {
+    const systemPreference = window.matchMedia('(prefers-color-scheme: dark)');
+    const updateSystemTheme = event => setSystemTheme(event.matches ? 'dark' : 'light');
+    systemPreference.addEventListener('change', updateSystemTheme);
+    return () => systemPreference.removeEventListener('change', updateSystemTheme);
+  }, []);
+
+  useEffect(() => {
+    const syncAppearance = event => {
+      if (event.key !== 'clava-appearance') return;
+      const nextAppearance = ['system', 'light', 'dark'].includes(event.newValue)
+        ? event.newValue
+        : 'system';
+      setAppearance(nextAppearance);
+    };
+    window.addEventListener('storage', syncAppearance);
+    return () => window.removeEventListener('storage', syncAppearance);
+  }, []);
+
+  const effectiveTheme = appearance === 'system' ? systemTheme : appearance;
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = effectiveTheme;
+    document.documentElement.style.colorScheme = effectiveTheme;
+  }, [effectiveTheme]);
+
+  useEffect(() => {
+    if (!appearanceOpen) return undefined;
+    const onPointerDown = event => {
+      if (!appearanceRef.current?.contains(event.target)) setAppearanceOpen(false);
+    };
+    const onKeyDown = event => {
+      if (event.key === 'Escape') setAppearanceOpen(false);
+    };
+    document.addEventListener('pointerdown', onPointerDown);
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown);
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [appearanceOpen]);
+
+  const chooseAppearance = value => {
+    setAppearance(value);
+    localStorage.setItem('clava-appearance', value);
+    setAppearanceOpen(false);
+  };
+
   return (
     <footer className="footer" id="contato">
       <div className="contact-card">
@@ -330,7 +536,10 @@ function Footer() {
               Fale sobre uma tarefa repetitiva, um fluxo com retrabalho ou sistemas que não trocam dados. A CLAVA responde
               para entender o processo e avaliar uma solução possível.
             </p>
-            <span className="button button--light">Entre em contato</span>
+            <button ref={contactTriggerRef} type="button" className="button button--light contact-card__open-modal"
+              onClick={openContactModal}>
+              Entre em contato
+            </button>
           </div>
         </div>
       </div>
@@ -339,8 +548,32 @@ function Footer() {
           <img src={assetUrl("footer-logo-small.svg")} alt="Clava" />
           <span>Todos os direitos reservados ©</span>
         </div>
-        <img className="footer__moon" src={assetUrl("icon-moon.svg")} alt="" />
+        <div className="appearance-picker" ref={appearanceRef}>
+          {appearanceOpen && (
+            <div className="appearance-menu" id="appearance-menu" role="menu" aria-label="Preferência de aparência">
+              <button type="button" role="menuitemradio" aria-checked={appearance === 'system'}
+                className={`appearance-menu__option${appearance === 'system' ? ' is-selected' : ''}`}
+                onClick={() => chooseAppearance('system')}>System</button>
+              <button type="button" role="menuitemradio" aria-checked={appearance === 'light'}
+                className={`appearance-menu__option${appearance === 'light' ? ' is-selected' : ''}`}
+                onClick={() => chooseAppearance('light')}>Light mode</button>
+              <button type="button" role="menuitemradio" aria-checked={appearance === 'dark'}
+                className={`appearance-menu__option${appearance === 'dark' ? ' is-selected' : ''}`}
+                onClick={() => chooseAppearance('dark')}>Dark mode</button>
+            </div>
+          )}
+          <button type="button" className="appearance-trigger" aria-label="Abrir opções de aparência"
+            aria-haspopup="menu" aria-expanded={appearanceOpen} aria-controls="appearance-menu"
+            onClick={() => setAppearanceOpen(open => !open)}>
+            <span className="appearance-trigger__icon-wrap" aria-hidden="true">
+              <img className="appearance-trigger__icon"
+                src={assetUrl(effectiveTheme === 'light' ? 'icon-sun.svg' : 'icon-moon.svg')} alt="" />
+            </span>
+          </button>
+        </div>
       </div>
+      {contactModalMounted && <ContactModal onClose={closeContactModal} triggerRef={contactTriggerRef}
+        isVisible={contactModalVisible} />}
     </footer>
   );
 }
