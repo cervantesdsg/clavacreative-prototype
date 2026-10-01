@@ -1741,9 +1741,10 @@ h2, h3, p {
 .contact-modal__fields {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+  column-gap: 12px;
+  row-gap: 12px;
 }
-.contact-modal__field { display: flex; min-width: 0; flex-direction: column; gap: 12px; color: inherit; font-size: 14px; line-height: normal; }
+.contact-modal__field { display: flex; min-width: 0; flex-direction: column; gap: 4px; color: inherit; font-size: 14px; line-height: normal; }
 .contact-modal__field--phone { font-size: 14px; }
 .contact-modal__field--message { grid-column: 1 / -1; }
 .contact-modal__field input,
